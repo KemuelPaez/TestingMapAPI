@@ -12,6 +12,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.GoogleMapOptions;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.UiSettings;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -31,6 +32,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         Button panSelfBtn = (Button) findViewById(R.id.panSelfCam);
 
+
         panSelfBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -38,6 +40,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 LatLng bacolod = new LatLng(10.675715, 122.952885);
 
                 mMap.moveCamera(CameraUpdateFactory.newLatLng(bacolod));
+
 
             }
         });
@@ -50,10 +53,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
         mMap = googleMap;
+        UiSettings mUiSettings = mMap.getUiSettings();
 
         // init zoom min/max preference
         googleMap.setMinZoomPreference(14.0f);
         googleMap.setMaxZoomPreference(31.0f);
+
 
         LatLng bacolod = new LatLng(10.675715, 122.952885);
         // Set bounds on bacolod coordinates
@@ -66,6 +71,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         mMap.moveCamera(CameraUpdateFactory.newLatLng(bacolod));
         mMap.animateCamera(CameraUpdateFactory.newLatLng(bacolod));
 
+        mUiSettings.setZoomControlsEnabled(true);
+
     }
+
 
 }
