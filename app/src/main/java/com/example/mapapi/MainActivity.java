@@ -9,6 +9,7 @@ import android.widget.Button;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.GoogleMapOptions;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
@@ -60,7 +61,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 new LatLng(10.586913,122.910118), // NE Bounds
                 new LatLng(10.712430,122.962391)); // SE Bounds
 
-        mMap.addMarker(new MarkerOptions().position(bacolod).title("You are Here!"));
+        mMap.addMarker(new MarkerOptions().position(bacolod).title("You are Here!").draggable(true));
         mMap.setLatLngBoundsForCameraTarget(bacolodBounds);
         mMap.moveCamera(CameraUpdateFactory.newLatLng(bacolod));
         mMap.animateCamera(CameraUpdateFactory.newLatLng(bacolod));
