@@ -13,6 +13,7 @@ import android.provider.Settings;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.Toast;
 
@@ -54,6 +55,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     public GoogleMap googleMap;
     public ImageView imageSearchBtn;
+    public ImageButton soyBtn;
     public EditText inputLocation;
 
     LocationRequest locRequest;
@@ -67,6 +69,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         setContentView(R.layout.activity_main);
 
         imageSearchBtn = findViewById(R.id.imageSearchBtn);
+        soyBtn = findViewById(R.id.soy);
         inputLocation = findViewById(R.id.inputLocation);
 
         checkPermission();
@@ -124,6 +127,13 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 //            }
 //        });
 
+        soyBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent i = new Intent(MainActivity.this,ImportantActivity.class);
+                startActivity(i);
+            }
+        });
 
     }
 
@@ -262,6 +272,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             @Override
             public void onLocationResult(@NonNull LocationResult locationResult) {
                 super.onLocationResult(locationResult);
+                // Comment out toast to stop the toast update.
                 Toast.makeText(MainActivity.this, "Location: "+locationResult.getLastLocation().getLatitude()+": "+locationResult.getLastLocation().getLongitude(), Toast.LENGTH_SHORT).show();
             }
         }, Looper.getMainLooper());
