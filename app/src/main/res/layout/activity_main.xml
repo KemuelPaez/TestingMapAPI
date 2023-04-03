@@ -52,36 +52,6 @@
             app:layout_constraintTop_toBottomOf="@+id/container"
             app:layout_constraintVertical_bias="0.523" />
 
-        <ImageButton
-            android:id="@+id/soy"
-            android:layout_width="331dp"
-            android:layout_height="236dp"
-            android:layout_marginTop="4dp"
-            android:paddingRight="100dp"
-            android:src="@drawable/coolsoy"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/inputLocation"
-            app:layout_constraintVertical_bias="0.0"
-            android:hapticFeedbackEnabled="true"
-            android:clickable="true"/>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:text="CLICK ↑"
-            android:textAlignment="center"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.498"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/soy"
-            app:layout_constraintVertical_bias="1.0"
-            android:textStyle="bold"
-            android:textSize="15sp"
-            android:textColor="@color/teal_700"/>
-
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

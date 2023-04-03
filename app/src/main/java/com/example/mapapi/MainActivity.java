@@ -55,7 +55,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     public GoogleMap googleMap;
     public ImageView imageSearchBtn;
-    public ImageButton soyBtn;
     public EditText inputLocation;
 
     LocationRequest locRequest;
@@ -69,7 +68,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         setContentView(R.layout.activity_main);
 
         imageSearchBtn = findViewById(R.id.imageSearchBtn);
-        soyBtn = findViewById(R.id.soy);
         inputLocation = findViewById(R.id.inputLocation);
 
         checkPermission();
@@ -126,14 +124,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 //
 //            }
 //        });
-
-        soyBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent i = new Intent(MainActivity.this,ImportantActivity.class);
-                startActivity(i);
-            }
-        });
 
     }
 
