@@ -112,7 +112,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 
         }
 
-        // TODO Search view functionality. . .
+        // TODO Search view functionality try (put the method on or after OnMapReady instead of before onMapReady)
 
     }
 
