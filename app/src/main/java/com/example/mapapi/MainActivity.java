@@ -6,27 +6,36 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
+import android.graphics.Point;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Looper;
 import android.provider.Settings;
 import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ImageButton;
-import android.widget.ImageView;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
+import android.widget.SearchView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.FragmentActivity;
 
+import com.android.volley.DefaultRetryPolicy;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.RetryPolicy;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.common.api.ResolvableApiException;
-import com.google.android.gms.location.CurrentLocationRequest;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -41,9 +50,12 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.model.mutation.ArrayTransformOperation;
 import com.karumi.dexter.Dexter;
 import com.karumi.dexter.PermissionToken;
 import com.karumi.dexter.listener.PermissionDeniedResponse;
@@ -51,11 +63,22 @@ import com.karumi.dexter.listener.PermissionGrantedResponse;
 import com.karumi.dexter.listener.PermissionRequest;
 import com.karumi.dexter.listener.single.PermissionListener;
 
-public class MainActivity extends AppCompatActivity implements OnMapReadyCallback {
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class MainActivity extends FragmentActivity implements OnMapReadyCallback {
 
     public GoogleMap googleMap;
-    public ImageView imageSearchBtn;
-    public EditText inputLocation;
+    public SearchView searchView;
+    public String[] places = {"University of St. Lasalle", "Bacolod Silay Airport", "888 China Town", "SM Mall", "Bacolod Lagoon"};
+
+    AutoCompleteTextView autoCompleteTextView;
+
+    ArrayAdapter<String> adapterItems;
 
     LocationRequest locRequest;
     FusedLocationProviderClient fusedLocationProviderClient;
@@ -67,8 +90,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        imageSearchBtn = findViewById(R.id.imageSearchBtn);
-        inputLocation = findViewById(R.id.inputLocation);
+        searchView = findViewById(R.id.searchView);
+        autoCompleteTextView = findViewById(R.id.auto_complete_txt);
+
+        adapterItems = new ArrayAdapter<String>(this,R.layout.list_places,places);
+
+        autoCompleteTextView.setAdapter(adapterItems);
 
         checkPermission();
 
@@ -85,45 +112,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         }
 
-
-        // TODO: 01/04/2023 Geocoding search function still not working. Need to find more tutorials iban outdated :).
-
-//        imageSearchBtn.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                String input = inputLocation.getText().toString();
-//                if (input == null){
-//                    Toast.makeText(MainActivity.this, "Empty Field", Toast.LENGTH_SHORT).show();
-//                }else {
-//
-//                Geocoder geocoder = new Geocoder(MainActivity.this,Locale.getDefault());
-//                    Toast.makeText(MainActivity.this, "Geo work", Toast.LENGTH_SHORT).show();
-//
-//                try {
-//                    List<Address> listAddress = geocoder.getFromLocationName(String.valueOf(inputLocation), 1);
-//
-//                    if (listAddress.size() > 0){
-//                        LatLng latlng = new LatLng(listAddress.get(0).getLatitude(), listAddress.get(0).getLongitude());
-//
-//                        // Set markers
-//                        MarkerOptions markerOptions = new MarkerOptions();
-//                        markerOptions.title("Searched Marker");
-//                        markerOptions.position(latlng);
-//                        googleMap.addMarker(markerOptions);
-//
-//                        // Set & Animate Camera
-//                        CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(latlng, 15);
-//                        googleMap.animateCamera(cameraUpdate);
-//
-//                    }
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                    }
-//
-//                }
-//
-//            }
-//        });
+        // TODO Search view functionality. . .
 
     }
 
@@ -146,7 +135,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         return false;
     }
-
 
     private void checkPermission() {
         Dexter.withContext(this).withPermission(Manifest.permission.ACCESS_FINE_LOCATION).withListener(new PermissionListener() {
@@ -177,38 +165,111 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     }
 
-
     @Override
     public void onMapReady(GoogleMap googleMap) {
-
-        LatLng latlng = new LatLng(10.675716641291453, 122.95286893844606);
-
-        // Set markers
-        MarkerOptions markerOptions = new MarkerOptions();
-        markerOptions.title("Searched Marker");
-        markerOptions.position(latlng);
-        googleMap.addMarker(markerOptions);
-
-        // Set & Animate Camera
-        CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(latlng, 15);
-        googleMap.animateCamera(cameraUpdate);
-
+        // Set map type
+        googleMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
 
         // Set UI and Controls on map
         googleMap.getUiSettings().setZoomControlsEnabled(true);
+        googleMap.getUiSettings().isCompassEnabled();
         googleMap.getUiSettings().setCompassEnabled(true);
         googleMap.getUiSettings().setZoomGesturesEnabled(true);
         googleMap.getUiSettings().setScrollGesturesEnabled(true);
         googleMap.getUiSettings().setRotateGesturesEnabled(false);
         googleMap.getUiSettings().setMyLocationButtonEnabled(true);
+        googleMap.setTrafficEnabled(true);
 
         // Enabling the Current location/pos of user
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-
             return;
-
         }
         googleMap.setMyLocationEnabled(true);
+
+        autoCompleteTextView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                String places = parent.getItemAtPosition(position).toString();
+                MarkerOptions markerOptions = new MarkerOptions();
+
+                if(parent.getItemAtPosition(position).equals("University of St. Lasalle")){
+                    Toast.makeText(MainActivity.this, "Marker is set in "+places, Toast.LENGTH_SHORT).show();
+
+                    // Coords of lasalle
+                    LatLng latlng = new LatLng(10.678417, 122.962483955146);
+
+                    // Set markers
+                    markerOptions.title("Marked in " + places);
+                    markerOptions.position(latlng);
+                    googleMap.addMarker(markerOptions);
+
+                    // Set & Animate Camera
+                    CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(latlng, 17);
+                    googleMap.animateCamera(cameraUpdate);
+
+                } else if (parent.getItemAtPosition(position).equals("Bacolod Silay Airport")){
+                    Toast.makeText(MainActivity.this, "Marker is set in "+places, Toast.LENGTH_SHORT).show();
+
+                    // Coords of airport
+                    LatLng latlng = new LatLng(10.777820237859661, 123.01351904869081);
+
+                    // Set markers
+                    markerOptions.title("Marked in " + places);
+                    markerOptions.position(latlng);
+                    googleMap.addMarker(markerOptions);
+
+                    // Set & Animate Camera
+                    CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(latlng, 17);
+                    googleMap.animateCamera(cameraUpdate);
+
+                } else if (parent.getItemAtPosition(position).equals("888 China Town")){
+                    Toast.makeText(MainActivity.this, "Marker is set in "+places, Toast.LENGTH_SHORT).show();
+
+                    // Coords of 888
+                    LatLng latlng = new LatLng(10.673676537839905, 122.94941425323488);
+
+                    // Set markers
+                    markerOptions.title("Marked in " + places);
+                    markerOptions.position(latlng);
+                    googleMap.addMarker(markerOptions);
+
+                    // Set & Animate Camera
+                    CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(latlng, 17);
+                    googleMap.animateCamera(cameraUpdate);
+
+                } else if (parent.getItemAtPosition(position).equals("SM Mall")){
+                    Toast.makeText(MainActivity.this, "Marker is set in "+places, Toast.LENGTH_SHORT).show();
+
+                    // Coords of SM
+                    LatLng latlng = new LatLng(10.671088169829, 122.94386744499208);
+
+                    // Set markers
+                    markerOptions.title("Marked in " + places);
+                    markerOptions.position(latlng);
+                    googleMap.addMarker(markerOptions);
+
+                    // Set & Animate Camera
+                    CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(latlng, 17);
+                    googleMap.animateCamera(cameraUpdate);
+
+                } else if (parent.getItemAtPosition(position).equals("Bacolod Lagoon")){
+                    Toast.makeText(MainActivity.this, "Marker is set in "+places, Toast.LENGTH_SHORT).show();
+
+                    // Coords of lagoon
+                    LatLng latlng = new LatLng(10.675716641291453, 122.95286893844606);
+
+                    // Set markers
+                    markerOptions.title("Marked in " + places);
+                    markerOptions.position(latlng);
+                    googleMap.addMarker(markerOptions);
+
+                    // Set & Animate Camera
+                    CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(latlng, 17);
+                    googleMap.animateCamera(cameraUpdate);
+                }
+
+            }
+        });
 
     }
 
@@ -263,7 +324,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             public void onLocationResult(@NonNull LocationResult locationResult) {
                 super.onLocationResult(locationResult);
                 // Comment out toast to stop the toast update.
-                Toast.makeText(MainActivity.this, "Location: "+locationResult.getLastLocation().getLatitude()+": "+locationResult.getLastLocation().getLongitude(), Toast.LENGTH_SHORT).show();
+                // Toast.makeText(MainActivity.this, "Location: "+locationResult.getLastLocation().getLatitude()+": "+locationResult.getLastLocation().getLongitude(), Toast.LENGTH_SHORT).show();
             }
         }, Looper.getMainLooper());
 
